@@ -118,20 +118,20 @@ func (ts TokenStrategy) Fitness(X *Genome) float64 {
 		}
 	}
 
-	return delta * 100000 + ts.as.Fitness(X)
+	return delta*100000 + ts.as.Fitness(X)
 }
 
 func (ts TokenStrategy) PrintStats(X *Genome) {
 	stats := ts.ComputeStats(X)
 
 	armorRatio := [4][5][]float64{{}, {}, {}, {}}
-	for rid := 0; rid < X.RaidCount; rid++ {
-		fmt.Printf("[Raid %2d] ", rid+1)
-		for t := Mystic; t <= Dreadful; t++ {
-			for s := SlotHead; s <= SlotLegs; s++ {
-				if !ts.targetSlots.Has(s) {
-					continue
-				}
+	for s := SlotHead; s <= SlotLegs; s++ {
+		if !ts.targetSlots.Has(s) {
+			continue
+		}
+		for rid := 0; rid < X.RaidCount; rid++ {
+			fmt.Printf("[Raid %2d] ", rid+1)
+			for t := Mystic; t <= Dreadful; t++ {
 				fmt.Printf("%s %s %2d:%-2d", t, s, stats[rid].ArmorReceiver[t][s], stats[rid].ArmorTrader[t][s])
 				var ratio float64
 				if stats[rid].ArmorReceiver[t][s] > 0 {
@@ -141,16 +141,11 @@ func (ts TokenStrategy) PrintStats(X *Genome) {
 				fmt.Printf(" (%f)", ratio)
 				fmt.Printf("\t")
 			}
+			fmt.Printf("\n")
 		}
-		fmt.Printf("\n")
-	}
 
-	fmt.Printf("[Average] ")
-	for t := Mystic; t <= Dreadful; t++ {
-		for s := SlotHead; s <= SlotLegs; s++ {
-			if !ts.targetSlots.Has(s) {
-				continue
-			}
+		fmt.Printf("[Average] ")
+		for t := Mystic; t <= Dreadful; t++ {
 			var sum float64
 			var count float64
 			for _, ratio := range armorRatio[t][s] {
@@ -159,18 +154,13 @@ func (ts TokenStrategy) PrintStats(X *Genome) {
 			}
 			fmt.Printf("%s %s        %f \t", t, s, sum/count)
 		}
-	}
-	fmt.Printf("\n")
+		fmt.Printf("\n")
 
-	fmt.Printf("[Optimal] ")
-	for t := Mystic; t <= Dreadful; t++ {
-		for s := SlotHead; s <= SlotLegs; s++ {
-			if !ts.targetSlots.Has(s) {
-				continue
-			}
+		fmt.Printf("[Optimal] ")
+		for t := Mystic; t <= Dreadful; t++ {
 			fmt.Printf("%s %s        %f \t", t, s, ts.targets[t][s])
 		}
+		fmt.Printf("\n\n")
 	}
-	fmt.Printf("\n\n")
 	ts.as.PrintStats(X)
 }

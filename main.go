@@ -14,6 +14,9 @@ import (
 	"github.com/MaxHalford/eaopt"
 )
 
+const RMAX = 10
+const CMAX = 100
+
 var strategy Strategy
 var healerMinRatio, healerMaxRatio float64
 var raidSize int
@@ -36,6 +39,9 @@ var roleIndex = struct {
 }{}
 
 var minRaids, maxRaids int
+var checkViability bool
+
+var prepareFns []func()
 
 func IndexRoster() {
 	playerCharacters = make([][]int, len(players))
@@ -87,7 +93,7 @@ func ParseOpts(ga *eaopt.GA) {
 
 	flag.IntVar(&raidSize, "size", 30, "maximum raid size")
 	flag.IntVar(&minRaids, "min", 2, "minimum number of raids")
-	flag.IntVar(&maxRaids, "max", 10, "maximum number of raids")
+	flag.IntVar(&maxRaids, "max", RMAX, "maximum number of raids")
 
 	flag.Float64Var(&healerMinRatio, "healer-min", 0.175, "minimum ratio of healer in raid")
 	flag.Float64Var(&healerMaxRatio, "healer-max", 0.5, "maximum ratio of healer in raid")
@@ -97,11 +103,13 @@ func ParseOpts(ga *eaopt.GA) {
 	flag.UintVar(&ga.NGenerations, "gen", 2000, "number of generation")
 
 	model := flag.String("model", "default", "the EA model to use")
+	noCheck := flag.Bool("no-check", false, "check raid viability at each steps")
 
 	cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 	flag.Parse()
 
 	strategy = ParseStrategy(*optStrategy)
+	checkViability = !*noCheck
 
 	switch *model {
 	case "mutonly":
@@ -109,7 +117,7 @@ func ParseOpts(ga *eaopt.GA) {
 	case "mutonly-nonstrict":
 		ga.Model = eaopt.ModMutationOnly{Strict: false}
 	case "default":
-		ga.Model = eaopt.ModGenerational{Selector: eaopt.SelTournament{NContestants: 3}, MutRate: 1, CrossRate: 0}
+		ga.Model = eaopt.ModGenerational{Selector: eaopt.SelTournament{NContestants: 3}, MutRate: 1, CrossRate: 1}
 	default:
 		log.Fatalf("Unknown model: %s", *model)
 	}
@@ -123,7 +131,13 @@ func main() {
 	}
 
 	ParseOpts(ga)
+	if flag.NArg() < 1 {
+		flag.Usage()
+		return
+	}
+
 	log.Printf("Using strategy: %s", strategy)
+	log.Printf("Checking viability: %v\n", checkViability)
 	log.Printf("Model: %+v\n\n", ga.Model)
 
 	log.Printf("Loading roster...")
@@ -135,6 +149,9 @@ func main() {
 	fmt.Fprint(os.Stderr, "\n")
 
 	strategy.Prepare()
+	for _, fn := range prepareFns {
+		fn()
+	}
 
 	var nextPercent uint = 0
 	var stop bool = false
@@ -173,17 +190,16 @@ func main() {
 		//log.Printf("Interrupted")
 	}()
 
-	ga.MigFrequency = ga.NGenerations / 100
-	ga.Migrator = eaopt.MigRing{NMigrants: ga.PopSize / 10}
+	ga.MigFrequency = ga.NGenerations / 5
+	ga.Migrator = eaopt.MigRing{NMigrants: ga.PopSize / 4}
 	ga.HofSize = 1
 
 	if minRaids != maxRaids {
 		ga.Speciator = Speciator{}
 	}
 
-	source := Xoshiro256ssSource{}
-	source.Seed(time.Now().UnixNano())
-	ga.RNG = rand.New(&source)
+	//rng.Seed(time.Now().UnixNano())
+	//ga.RNG = rand.New(&rng)
 
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)

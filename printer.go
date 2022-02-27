@@ -2,10 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"sort"
 )
 
 func PrintRaid(X *Genome) {
+	if !X.Viable() {
+		log.Printf("Raid is not viable: %+v", X)
+		return
+	}
+
 	raids := make([][]Character, X.RaidCount+1)
 	for i := range raids {
 		raids[i] = make([]Character, 0)

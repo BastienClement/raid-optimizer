@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/csv"
+	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"unicode/utf8"
@@ -11,11 +13,12 @@ import (
 var longestCharName int
 
 type Character struct {
-	Player int
-	Name   string
-	Class  Class
-	Role   Role
-	Main   bool
+	Player     int
+	Name       string
+	Class      Class
+	Role       Role
+	Main       bool
+	TokenSlots TokenSlotSet
 }
 
 func (char Character) String() string {
@@ -35,15 +38,25 @@ func (char Character) String() string {
 }
 
 func LoadRoster() ([]Character, []string) {
-	f, _ := os.Open("roster.txt")
+	f, err := os.Open(flag.Arg(0))
+	if err != nil  {
+		log.Fatalf("%s", err)
+	}
 	reader := csv.NewReader(f)
 
-	records, _ := reader.ReadAll()
+	records, err := reader.ReadAll()
+	if err != nil  {
+		log.Fatalf("%s", err)
+	}
+
+	if len(records) > CMAX {
+		log.Fatalf("Number of record (%d) > CMAX (%d)", len(records), CMAX)
+	}
 
 	roster := make([]Character, len(records))
 	players := make([]string, 0)
 	playerIndex := make(map[string]int)
-
+		
 	for i, record := range records {
 		player := record[0]
 		if _, found := playerIndex[player]; !found {
@@ -56,13 +69,17 @@ func LoadRoster() ([]Character, []string) {
 			longestCharName = len
 		}
 
-		roster[i] = Character{
+		char := Character{
 			Player: playerIndex[player],
 			Name:   name,
 			Class:  ParseClass(record[3]),
 			Role:   ParseRole(record[1]),
 			Main:   record[4] == "True",
 		}
+
+
+		strategy.LoadChar(&char, record)
+		roster[i] = char
 	}
 
 	return roster, players

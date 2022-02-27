@@ -16,6 +16,7 @@ const (
 type TokenStrategy struct {
 	targetSlots TokenSlotSet
 	targets     [4][5]float64
+	as          ArmorStrategy
 }
 
 func (TokenStrategy) String() string {
@@ -43,7 +44,7 @@ func (TokenStrategy) TokenRole(c Character, s TokenSlot) int {
 
 func (ts *TokenStrategy) Prepare() {
 	ts.targetSlots = ParseTokenSlots(flag.Arg(1))
-	log.Printf("Computing targets (%s)...", ts.targetSlots)
+	log.Printf("Computing token targets (%s)...", ts.targetSlots)
 
 	var tokenReceiver, tokenTrader [4][5]int
 
@@ -71,6 +72,7 @@ func (ts *TokenStrategy) Prepare() {
 	}
 
 	log.Printf("Theoretical optimums: %+v", ts.targets)
+	ts.as.Prepare()
 }
 
 func (ts TokenStrategy) ComputeStats(X *Genome) [RMAX]TokenRaidStats {
@@ -116,7 +118,7 @@ func (ts TokenStrategy) Fitness(X *Genome) float64 {
 		}
 	}
 
-	return delta
+	return delta * 100000 + ts.as.Fitness(X)
 }
 
 func (ts TokenStrategy) PrintStats(X *Genome) {
@@ -169,5 +171,6 @@ func (ts TokenStrategy) PrintStats(X *Genome) {
 			fmt.Printf("%s %s        %f \t", t, s, ts.targets[t][s])
 		}
 	}
-	fmt.Printf("\n")
+	fmt.Printf("\n\n")
+	ts.as.PrintStats(X)
 }

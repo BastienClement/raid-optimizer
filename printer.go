@@ -64,6 +64,6 @@ func PrintRaid(X *Genome) {
 		fmt.Print("\n")
 	}
 
-	fmt.Printf("%v\n", stats)
+	fmt.Printf("%v\n\n", stats)
 	strategy.PrintStats(X)
 }

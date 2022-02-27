@@ -23,7 +23,7 @@ func (ArmorStrategy) LoadChar(char *Character, record []string) {
 }
 
 func (as *ArmorStrategy) Prepare() {
-	log.Printf("Computing targets...")
+	log.Printf("Computing armor targets...")
 
 	var armorReceiver, armorTrader [4]int
 

@@ -10,10 +10,6 @@ func (X *Genome) Evaluate() (float64, error) {
 
 // Evaluates secondary fitness critera. Must return a value <1.0.
 func secondaryFitness(X *Genome) float64 {
-	return missingBuffs(X) / 10
-}
-
-func missingBuffs(X *Genome) float64 {
 	const (
 		ArcaneIntellect uint8 = 1 << iota
 		PwFortitude
@@ -25,8 +21,15 @@ func missingBuffs(X *Genome) float64 {
 	const AllBuffs = ArcaneIntellect | PwFortitude | BattleShout | ChaosBrand | MysticTouch
 
 	var raidBuffs [RMAX]uint8
+	var count [RMAX]int
+
 	for cid, rid := range X.Distribution {
-		if rid < 0 || raidBuffs[rid] == AllBuffs {
+		if rid < 0 {
+			continue
+		}
+		count[rid] += 1
+
+		if raidBuffs[rid] == AllBuffs {
 			continue
 		}
 
@@ -50,14 +53,24 @@ func missingBuffs(X *Genome) float64 {
 		}
 	}
 
-	var malus float64
+	var missingBuffsMalus float64
 	for rid := 0; rid < X.RaidCount; rid++ {
 		for buff := ArcaneIntellect; buff <= MysticTouch; buff <<= 1 {
 			if raidBuffs[rid]&buff == 0 {
-				malus += 1 / float64(X.RaidCount)
+				missingBuffsMalus += 1 / float64(X.RaidCount)
 			}
 		}
 	}
 
-	return malus / 5
+	var min, max int = 30, 0
+	for r := 0; r < X.RaidCount; r++ {
+		if count[r] > max {
+			max = count[r]
+		}
+		if count[r] < min {
+			min = count[r]
+		}
+	}
+
+	return (missingBuffsMalus/5)/10 + (float64(max-min)/20)/10000
 }

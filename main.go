@@ -95,7 +95,7 @@ func ParseOpts(ga *eaopt.GA) {
 	flag.IntVar(&minRaids, "min", 2, "minimum number of raids")
 	flag.IntVar(&maxRaids, "max", RMAX, "maximum number of raids")
 
-	flag.Float64Var(&healerMinRatio, "healer-min", 0.175, "minimum ratio of healer in raid")
+	flag.Float64Var(&healerMinRatio, "healer-min", 0.18, "minimum ratio of healer in raid")
 	flag.Float64Var(&healerMaxRatio, "healer-max", 0.5, "maximum ratio of healer in raid")
 
 	flag.UintVar(&ga.NPops, "npops", 12, "number of populations")

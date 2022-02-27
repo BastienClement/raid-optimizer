@@ -93,6 +93,10 @@ func (tss *TokenSlotSet) Set(ts TokenSlot) {
 	*tss |= (1 << ts)
 }
 
+func (tss TokenSlotSet) Count() int {
+	return int(tss&1 + (tss>>1)&1 + (tss>>2)&1 + (tss>>3)&1 + (tss>>4)&1)
+}
+
 func (tss TokenSlotSet) String() (str string) {
 	if tss.Has(SlotHead) {
 		str += "H"

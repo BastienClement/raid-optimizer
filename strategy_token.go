@@ -33,7 +33,7 @@ func (TokenStrategy) LoadChar(char *Character, record []string) {
 }
 
 func (TokenStrategy) TokenRole(c Character, s TokenSlot) int {
-	if c.TokenSlots.Has(s) {
+	if c.TokenSlots.Has(s) || c.TokenSlots.Count() >= 4 {
 		return TokenRoleTrader
 	} else if c.Main {
 		return TokenRoleReceiver

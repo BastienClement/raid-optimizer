@@ -37,7 +37,7 @@ func (X *Genome) MutBench(rng *rand.Rand) {
 
 		rid := X.Distribution[benchable[i]]
 
-		if stats[rid].Count <= 10 {
+		if stats[rid].Count <= float64(minRaidSize) {
 			goto impossible // Raid is already at minimum size
 		}
 

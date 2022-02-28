@@ -46,7 +46,7 @@ again:
 			}
 
 			for _, rid := range rng.Perm(X.RaidCount) {
-				if stats[rid].Count >= float64(raidSize) {
+				if stats[rid].Count >= float64(maxRaidSize) {
 					continue // This raid is already full...
 				}
 

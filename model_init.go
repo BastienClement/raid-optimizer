@@ -152,7 +152,7 @@ again:
 	dpsCountPerRaid := make([]int, X.RaidCount*2)
 	for i := 0; i < X.RaidCount; i++ {
 		rh := float64(raidHealsCount[i])
-		required := int(math.Ceil(Max(10.0-2.0-rh, rh/healerMaxRatio-rh-2.0)))
+		required := int(math.Ceil(Max(float64(minRaidSize)-2.0-rh, rh/healerMaxRatio-rh-2.0)))
 		bonus := int(math.Floor(rh/healerMinRatio-rh-2.0)) - required
 
 		dpsCountPerRaid[i*2] = required

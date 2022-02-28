@@ -19,7 +19,7 @@ const CMAX = 100
 
 var strategy Strategy
 var healerMinRatio, healerMaxRatio float64
-var raidSize int
+var minRaidSize, maxRaidSize int
 
 var roster []Character
 var players []string
@@ -77,8 +77,8 @@ func ComputeBounds() {
 	charCount := float64(len(roleIndex.Tank.Chars) + len(roleIndex.Heal.Chars) + len(roleIndex.Dps.Chars))
 
 	// Roster-related bounds
-	minRaids = Max(minRaids, int(math.Ceil(mainCount/float64(raidSize)))) // Packing mains in the minimum number of raids
-	maxRaids = Min(maxRaids, int(math.Ceil(charCount/10)))                // Spreading every char in the smallest possible raids
+	minRaids = Max(minRaids, int(math.Ceil(mainCount/float64(maxRaidSize)))) // Packing mains in the minimum number of raids
+	maxRaids = Min(maxRaids, int(math.Ceil(charCount/float64(minRaidSize)))) // Spreading every char in the smallest possible raids
 
 	// Healers-related bounds
 	// TODO: ensure bounds are not broken when taking healer ratio in consideration
@@ -91,12 +91,13 @@ var cpuprofile *string
 func ParseOpts(ga *eaopt.GA) {
 	optStrategy := flag.String("strategy", "armor", "optimization strategy")
 
-	flag.IntVar(&raidSize, "size", 30, "maximum raid size")
+	flag.IntVar(&minRaidSize, "min-size", 10, "minimum raid size")
+	flag.IntVar(&maxRaidSize, "max-size", 30, "maximum raid size")
 	flag.IntVar(&minRaids, "min", 2, "minimum number of raids")
 	flag.IntVar(&maxRaids, "max", RMAX, "maximum number of raids")
 
 	flag.Float64Var(&healerMinRatio, "healer-min", 0.18, "minimum ratio of healer in raid")
-	flag.Float64Var(&healerMaxRatio, "healer-max", 0.5, "maximum ratio of healer in raid")
+	flag.Float64Var(&healerMaxRatio, "healer-max", 0.25, "maximum ratio of healer in raid")
 
 	flag.UintVar(&ga.NPops, "npops", 12, "number of populations")
 	flag.UintVar(&ga.PopSize, "popsize", 3000, "number of size of populations")

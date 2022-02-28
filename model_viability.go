@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-const debugViability = true
+const debugViability = false
 
 func (X *Genome) Viable() bool {
 	return Viable(X.Distribution, X.RaidCount)
@@ -65,7 +65,7 @@ func Viable(distribution []int, size int) bool {
 
 	for _, raid := range raids {
 		// Validate raid viability
-		if raid.Count < 10 || raid.Count > 30 {
+		if raid.Count < minRaidSize || raid.Count > maxRaidSize {
 			if debugViability {
 				fmt.Printf("Bad size\n")
 			}
